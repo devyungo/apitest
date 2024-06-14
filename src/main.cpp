@@ -20,7 +20,6 @@ const char index_html[] PROGMEM = R"rawliteral(
   </style>
 </head>
 <body>
-  <button id="connectButton" onclick="connectWebSocket()">Connect</button>
   <div id="connectStatus"></div>
   <div>
     <button id="up1" ontouchstart="upPressed()" ontouchend="upReleased()">UP</button>
@@ -31,7 +30,6 @@ const char index_html[] PROGMEM = R"rawliteral(
   debug:
   <div id="received">none</div>
   <script>
-    const connectButton = document.getElementById("connectButton");
     const connectStatus = document.getElementById("connectStatus");
     let ws = null;
     const received = document.getElementById("received");
@@ -48,6 +46,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         received.innerHTML = event.data;
       };
     }
+    connectWebSocket()
     let controls = { upDown: 0, leftRight: 0 };
     document.addEventListener("keydown", function (event) {
       if (event.code === "ArrowUp") {
