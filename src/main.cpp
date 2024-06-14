@@ -118,20 +118,60 @@ int xValue = 0;
 int leftVelocity = 0;
 int rightVelocity = 0;
 
-int ENA = 1;
-int IN1 = 2;
-int IN2 = 3;
-int IN3 = 4;
-int IN4 = 5;
-int ENB = 6;
+int ENA = 13;
+int IN1 = 12;
+int IN2 = 14;
+int IN3 = 27;
+int IN4 = 26;
+int ENB = 25;
 
 uint8_t numA;
+void setupMotors()
+{
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  pinMode(ENB, OUTPUT);
+}
+
+void moveMotors(int leftSpeed, int rightSpeed) {
+  int leftPWM = map(abs(leftSpeed), 0, 1, 0, 255);
+  int rightPWM = map(abs(rightSpeed), 0, 1, 0, 255);
+
+  analogWrite(ENA, leftPWM);
+  if (leftSpeed > 0) {
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+  } else if (leftSpeed < 0) {
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+  } else {
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, LOW);
+  }
+
+  analogWrite(ENB, rightPWM);
+  if (rightSpeed > 0) {
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+  } else if (rightSpeed < 0) {
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
+  } else {
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, LOW);
+  }
+}
+
 
 /*
 L298NX2 motorDrivers(ENA, IN1, IN2, IN3, IN4, ENB);
 */
 void setup()
 {
+  setupMotors();
   Serial.begin(9600);
   WiFi.softAP(ssid, password);
   IPAddress IP = WiFi.softAPIP();
@@ -146,13 +186,13 @@ void setup()
 
 void loop()
 {
+
   clientServer.handleClient();
   webSocket.loop();
 
   leftVelocity = yValue + xValue;
   rightVelocity = yValue - xValue;
-  webSocket.sendTXT(numA, "leftVelocity: " + String(leftVelocity) + ", rightVelocity: " + String(rightVelocity));
-    
+  moveMotors(leftVelocity, rightVelocity);
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
@@ -181,7 +221,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
     }
     yValue = doc["upDown"];
     xValue = doc["leftRight"];
-    webSocket.sendTXT(num, "leftVelocity: " + String(leftVelocity) + ", rightVelocity: " + String(rightVelocity));
     break;
   }
   }
